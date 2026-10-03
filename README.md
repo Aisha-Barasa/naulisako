@@ -1,10 +1,12 @@
 <div align="center">
 
-# NauliSako
+# Nauli SaKo
 
 ### Matatu fare payments, settled in Bitcoin Lightning
 
 Pay with ordinary M-Pesa. Fares settle into the vehicle's own segregated Lightning wallet, conductors verify on a live dashboard, and owners see fleet-wide totals and forecasts.
+
+**Live demo:** [nauli-sako.vercel.app](https://nauli-sako.vercel.app)
 
 <br />
 
@@ -33,10 +35,11 @@ Pay with ordinary M-Pesa. Fares settle into the vehicle's own segregated Lightni
 
 | | |
 | :-- | :-- |
-| **Passenger** | Scans a QR code on the vehicle and pays with M-Pesa from their own phone — no app, no new wallet |
+| **Passenger** | Scans the QR sticker inside the matatu (or types the code printed under it) and pays with M-Pesa from their own phone — no app, no new wallet |
 | **Conductor** | Watches fares land on a live dashboard and verifies against a 3-character code, with no need to inspect anyone's phone |
 | **Owner or SACCO** | Sees fares arrive in each vehicle's own segregated Lightning wallet, with fleet totals grouped Owner → Plate → Conductor, and can cash out sats to M-Pesa through a third-party provider |
 | **Transparency** | A signed daily summary — total fares, total sats, and a hash of the day's transaction list — is published to Nostr per vehicle |
+| **Accessibility** | Results are read aloud and confirmed by vibration, large tap targets throughout, larger-text and high-contrast modes, and screen-reader announcements for payments |
 
 ---
 
@@ -54,7 +57,7 @@ Paying a matatu fare by M-Pesa today usually means handing your phone, or at lea
 
 ## The Solution
 
-Nauli Sacco removes the phone-showing step. The passenger pays from their own phone — scanning a QR code on the vehicle, entering the fare, and confirming a real M-Pesa STK prompt. The fare then appears on the conductor's live dashboard, driven by a verified payment callback rather than a screen shown by the passenger.
+Nauli SaKo removes the phone-showing step. The passenger pays from their own phone — scanning a QR code on the vehicle, entering the fare, and confirming a real M-Pesa STK prompt. The fare then appears on the conductor's live dashboard, driven by a verified payment callback rather than a screen shown by the passenger.
 
 Under the hood, each matatu holds its own segregated Lightning wallet. When a fare is confirmed, a treasury wallet — pre-funded with sats — pays that vehicle's wallet the KES-equivalent amount, so the vehicle's balance grows in sats immediately. A signed daily summary per vehicle is published to Nostr, and owners can see fleet-wide totals grouped by owner, then plate, then conductor, with a simple next-day forecast.
 
@@ -62,14 +65,14 @@ Under the hood, each matatu holds its own segregated Lightning wallet. When a fa
 
 ## Why Lightning and Why Bitcoin
 
-Nauli Sacco is not a payments app with Bitcoin attached. The design depends on properties ordinary payment rails don't give a matatu fleet — while being honest about what kind of custody is actually in play.
+Nauli SaKo is not a payments app with Bitcoin attached. The design depends on properties ordinary payment rails don't give a matatu fleet — while being honest about what kind of custody is actually in play.
 
 | Property | What it means for a matatu |
 | :-- | :-- |
 | **Segregated per-vehicle wallets** | Every matatu has its own Lightning wallet, hosted on our LNbits instance. Fares settle directly into it, with no shared till or paybill account between vehicles. These wallets are **custodial** — LNbits holds the keys — but each vehicle's funds are kept apart from every other vehicle's, which is the property that actually matters for a SACCO with many owners sharing one platform. |
 | **Built for small, fast payments** | Lightning settles low-value payments in seconds, which suits fares of a few tens of shillings — far below what a typical on-chain Bitcoin transaction could sensibly handle. |
 | **Open and borderless** | Bitcoin and Lightning are open protocols. A SACCO's balance isn't locked inside one company's proprietary ledger. |
-| **Public, checkable record** | A signed daily summary per vehicle — total fares, total sats, and a hash of that day's transaction list — is published to Nostr, an open protocol with many independent relays. Anyone with the event data can verify it without asking Nauli Sacco's permission. |
+| **Public, checkable record** | A signed daily summary per vehicle — total fares, total sats, and a hash of that day's transaction list — is published to Nostr, an open protocol with many independent relays. Anyone with the event data can verify it without asking Nauli SaKo's permission. |
 | **Familiar for the passenger** | The passenger still pays with M-Pesa. There is no new wallet, no seed phrase and no learning curve. Bitcoin is the settlement layer underneath, not something they ever have to think about. |
 
 ---
@@ -84,11 +87,11 @@ Nauli Sacco is not a payments app with Bitcoin attached. The design depends on p
     </td>
     <td width="33%" valign="top">
       <h4>Conductors</h4>
-      See each fare arrive on a live dashboard scoped to their vehicle, without inspecting passengers' phones. A quick-check box matches a 3-character code the passenger is shown against the live list, and a tap marks it verified.
+      See each fare arrive on a live dashboard scoped to their vehicle, without inspecting passengers' phones. A quick-check box matches a 3-character code the passenger is shown against the live list, and tapping the row marks it verified. Payment alerts (chime, vibration, a notification when the screen is off), and a <em>Prompt passenger</em> screen to send the M-Pesa prompt to a passenger who can't scan.
     </td>
     <td width="33%" valign="top">
       <h4>SACCOs and Owners</h4>
-      See fares grouped Owner → Plate → Conductor, with today's totals in KES and sats per vehicle. A simple forecast projects tomorrow's likely hourly earnings from recent history, and owners can cash out a vehicle's sats to M-Pesa by paying a Lightning invoice from a provider like Tando or bitcoin.co.ke.
+      See fares grouped Owner → Plate → Conductor, with today's totals in KES and sats per vehicle. A Forecast tab projects tomorrow's likely hourly earnings from recent history, and owners can cash out a vehicle's sats to M-Pesa by paying a Lightning invoice from a provider like Tando or bitcoin.co.ke.
     </td>
   </tr>
 </table>
@@ -118,7 +121,7 @@ flowchart TD
 | 4 | **Settle** | A treasury wallet, pre-funded with sats, pays an invoice issued by the vehicle's own LNbits wallet for the KES-equivalent amount. The treasury is the market maker standing between M-Pesa shillings and Lightning sats — it is not a direct KES-to-BTC conversion. |
 | 5 | **Verify** | `/dashboard/<vehicleCode>` updates live through Supabase Realtime. The conductor matches the passenger's 3-character code against the new row and taps "Verified." |
 | 6 | **Report** | Once a day, a signed summary per vehicle — total fares, total sats, and a hash of the transaction list — publishes to Nostr relays. |
-| 7 | **Review and cash out** | `/sacco/<saccoId>` shows fares grouped Owner → Plate → Conductor, with a simple next-day forecast. An owner can cash out a vehicle's sats by pasting a Lightning invoice or address from a provider like Tando or bitcoin.co.ke, which the vehicle's wallet pays directly. |
+| 7 | **Review and cash out** | `/sacco/<saccoId>` shows fares grouped Owner → Plate → Conductor, with Takings, Forecast and Cash out tabs. An owner can cash out a vehicle's sats by pasting a Lightning invoice or address from a provider like Tando or bitcoin.co.ke, which the vehicle's wallet pays directly. |
 
 ---
 
@@ -135,14 +138,14 @@ flowchart TD
 
 | Concern | How it is handled |
 | :-- | :-- |
-| **M-Pesa PIN** | Entered only on Safaricom's own STK prompt on the passenger's phone. Nauli Sacco never displays a PIN field and never receives or stores a PIN. |
+| **M-Pesa PIN** | Entered only on Safaricom's own STK prompt on the passenger's phone. Nauli SaKo never displays a PIN field and never receives or stores a PIN. |
 | **Payment authenticity** | The server tracks Daraja's real `CheckoutRequestID` for every request and only updates a transaction that is still `processing`, so a repeated or late callback can't double-apply. A manual STK-query fallback exists for when the sandbox callback doesn't arrive. |
 | **Passenger privacy** | Only a masked phone number and its last 3 digits are stored — never the full number — which is what makes it safe to stream transaction rows to the browser over Supabase Realtime in the first place. |
-| **Conductor and owner access** | There is no full account system yet. `/sacco`, `/analytics`, and the payout screen are guarded by a single shared PIN (`DEMO_ADMIN_PIN`) stored in a cookie. **This is a lightweight gate for a demo, not real authentication**, and the README says so plainly rather than overstating it. |
+| **Conductor and owner access** | There is no full account system yet. The SACCO view (Takings, Forecast and Cash out) and the Nostr publish action are guarded by a single shared PIN (`DEMO_ADMIN_PIN`) stored in a cookie. **This is a lightweight gate for a demo, not real authentication**, and the README says so plainly rather than overstating it. |
 | **Demo data** | Seeded transactions used to populate dashboards and forecasts are tagged `source = 'seed'` and excluded from the live conductor list, so the real-time demo stays clean. |
 | **Privileged keys** | The Supabase service role key, Daraja credentials, and LNbits admin keys exist only in server code (`app/api/**`, `lib/server/**`) and are never imported into a client component. The browser only ever uses the Supabase anon key, scoped by Row Level Security. |
 | **Funds custody** | Each vehicle has its own LNbits wallet, so one vehicle's funds are never pooled with another's — but the wallets are custodial, held on a hosted LNbits instance, not self-custodied by the owner. This is stated as "segregated per-vehicle wallets," not "non-custodial," everywhere in this project. |
-| **Off-ramp** | Cashing out is a payout, not a withdrawal link: the vehicle's wallet pays a BOLT11 invoice or Lightning address the owner supplies from their own provider (e.g. Tando, bitcoin.co.ke). Nauli Sacco does not integrate with either provider's API and never pulls funds on its own. |
+| **Off-ramp** | Cashing out is a payout, not a withdrawal link: the vehicle's wallet pays a BOLT11 invoice or Lightning address the owner supplies from their own provider (e.g. Tando, bitcoin.co.ke). Nauli SaKo does not integrate with either provider's API and never pulls funds on its own. |
 | **Input handling** | Phone numbers are normalized server-side (`07`, `01`, and `254` formats are all accepted) before reaching Daraja. |
 
 > [!WARNING]
@@ -174,8 +177,9 @@ app/
   pay/[vehicleCode]/status/[txId]/page.tsx   Waiting → success/fail (Realtime)
   dashboard/[vehicleCode]/page.tsx      Conductor live view + QR
   sacco/[saccoId]/page.tsx              Owner → Plate → Conductor totals
+  sacco/[saccoId]/forecast/page.tsx     Next-day forecast per vehicle (SACCO tab), optional AI summary
   sacco/[saccoId]/payout/page.tsx       Off-ramp: pay a BOLT11 invoice or Lightning address
-  analytics/[saccoId]/page.tsx          Next-day forecast per vehicle
+  analytics/[saccoId]/page.tsx          Redirects to the forecast tab
   api/
     pay/route.ts                        Passenger payment initiation (real Daraja STK push)
     hooks/payment-result/route.ts       Daraja status callback
@@ -197,10 +201,14 @@ lib/
   server/lnurl.ts                       Resolves a Lightning address for payout
   server/nostr.ts                       Builds and publishes the daily summary event
   server/forecast.ts                    Weekday × hour averages, peak hours, suggested shift
+  server/briefing.ts                    Optional Claude-written forecast summary (aggregates only)
+  feedback.ts                           Read-aloud, vibration, chime and notifications
+  preferences.ts                        Per-device accessibility settings
   phone.ts                              Kenyan phone normalization and masking
 scripts/
   seed.ts                               Sacco, owners, vehicles, wallets, 30 days of history
   smoke.ts                              End-to-end check: pay → callback → settle
+  sweep.ts                              Moves demo sats from vehicle wallets back to the treasury
 supabase/
   migrations/0001_init.sql              Full database schema
 .env.example
@@ -226,12 +234,14 @@ README.md
 | `DARAJA_CALLBACK_TOKEN` | Server only | Random string appended to and checked on the callback URL |
 | `LNBITS_URL` | Server only | The LNbits instance hosting the treasury and vehicle wallets |
 | `LNBITS_TREASURY_ADMIN_KEY` / `LNBITS_TREASURY_INVOICE_KEY` | Server only | Treasury wallet keys used to fund vehicle wallets |
+| `LNBITS_ACCESS_TOKEN` (or `LNBITS_USER_ID`) | Seed script only | Account-level token that lets `scripts/seed.ts` create vehicle wallets (LNbits 1.x refuses a wallet admin key for this). Not needed on the server |
+| `SEED_WALLETS_JSON` | Seed script only | Fallback: wallet IDs and keys for wallets created by hand in LNbits |
 | `BTC_KES_FALLBACK` | Server | KES-per-BTC rate used if a live price fetch fails |
 | `DEMO_SATS_PER_KES` | Server | Optional override to keep the treasury float small during a demo |
 | `NOSTR_SECRET_KEY_HEX` | Server only | Signs the daily summary events |
 | `NOSTR_RELAYS` | Server | Comma-separated relay list |
 | `ANTHROPIC_API_KEY` | Server, optional | Adds a short plain-English narration to the numeric forecast |
-| `DEMO_ADMIN_PIN` | Server | Guards `/sacco`, `/analytics`, and the payout screen — a demo gate, not real authentication |
+| `DEMO_ADMIN_PIN` | Server | Guards the SACCO view (Takings, Forecast, Cash out) and Nostr publishing — a demo gate, not real authentication |
 
 ---
 
@@ -243,11 +253,11 @@ README.md
 npm install
 ```
 
-**2. Configure the environment.** Create `.env.local` with the variables above.
+**2. Configure the environment.** Copy `.env.example` to `.env.local` (or `.env`) and fill in the variables above.
 
 **3. Apply the database schema.** Run `supabase/migrations/0001_init.sql` in the Supabase SQL editor, then enable Realtime on the `transactions` table under Database, Replication.
 
-**4. Set up LNbits.** On your LNbits instance, create the treasury wallet and fund it with test sats, then create or seed one wallet per vehicle (see `scripts/seed.ts`). Enable the LNURLp extension if you want vehicles to have an optional Lightning address.
+**4. Set up LNbits.** On your LNbits instance, create the treasury wallet and fund it with a few thousand sats. For the seed script to create vehicle wallets, create an access control list that may write to wallets, generate a token for it, and set `LNBITS_ACCESS_TOKEN`. Keep the instance running for the whole demo: while it's off, fares still go through M-Pesa but can't settle to sats until retried.
 
 **5. Seed demo data.**
 
@@ -261,10 +271,12 @@ This creates a demo SACCO, owners, and vehicles, and backfills 30 days of realis
 
 ```bash
 npm run dev
-cloudflared tunnel --url http://localhost:3000
+ngrok http 3000        # or: cloudflared tunnel --url http://localhost:3000
 ```
 
-**7. Register the Daraja callback.** In the Daraja sandbox app, set the callback URL to `<tunnel-url>/api/hooks/payment-result?token=<DARAJA_CALLBACK_TOKEN>`.
+If your network has broken IPv6 (Node errors like `fetch failed` / `ETIMEDOUT`), start the dev server with `NODE_OPTIONS="--dns-result-order=ipv4first --network-family-autoselection-attempt-timeout=3000" npm run dev`.
+
+**7. Point the Daraja callback at your tunnel.** Set `DARAJA_CALLBACK_BASE_URL` to the tunnel's HTTPS address. The app sends `<base>/api/hooks/payment-result?token=<DARAJA_CALLBACK_TOKEN>` with every STK push, so nothing needs registering in the Daraja portal. On Vercel, use the Vercel URL instead.
 
 **8. Run the smoke test.**
 
@@ -272,24 +284,24 @@ cloudflared tunnel --url http://localhost:3000
 npx tsx scripts/smoke.ts KAB123B 50 0708374149
 ```
 
-This pays a fare through `/api/pay`, simulates the callback if the sandbox doesn't deliver one, and confirms the transaction reaches `settled` with the vehicle wallet balance increased.
+This pays a fare through `/api/pay`, simulates the callback, and confirms the transaction reaches `settled` with the vehicle wallet balance increased. Use `SMOKE_BASE_URL=https://nauli-sako.vercel.app` to run it against the deployed app, and `npx tsx scripts/sweep.ts` afterwards to move the test sats back to the treasury.
 
 ---
 
 ## Project Status
 
-Scope for the build, grouped by priority rather than claimed as finished — this is accurate as of the last update to this README, and should be revised once features are confirmed working end to end.
+Status as of demo day (October 4, 2026). "Working" means exercised end to end against the real Supabase, LNbits and Daraja sandbox.
 
-| Priority | Feature | Notes |
+| Priority | Feature | Status |
 | :-- | :-- | :-- |
-| P0 | Passenger payment via real Daraja sandbox STK push | Core demo path |
-| P0 | Daraja callback handling, with STK-query and simulate fallbacks | Sandbox callbacks are unreliable; both fallbacks are kept available at all times, including on stage |
-| P0 | Treasury settlement into the vehicle's own LNbits wallet | The treasury float is the real cost of the sandbox demo, since no real KES arrives |
-| P0 | Live conductor dashboard via Supabase Realtime, with 3-character verification | |
-| P0 | Sacco view: Owner → Plate → Conductor totals | |
-| P1 | Next-day forecast, with optional Claude narration | Statistical averages, not a trained model |
-| P1 | Off-ramp payout to Tando / bitcoin.co.ke via BOLT11 invoice or Lightning address | Owner-initiated; Nauli Sacco never pulls funds |
-| P1 | Nostr daily summary per vehicle | Once per vehicle per day, not per transaction |
+| P0 | Passenger payment via real Daraja sandbox STK push | Working, including a real prompt to a phone |
+| P0 | Daraja callback handling, with STK-query and simulate fallbacks | Working. The status page asks M-Pesa itself after 30 s because sandbox callbacks often don't arrive |
+| P0 | Treasury settlement into the vehicle's own LNbits wallet | Working, with protection against paying twice. The treasury float is the demo's real cost |
+| P0 | Live conductor dashboard via Supabase Realtime, with 3-character verification | Working (about 2 s from callback to screen), plus alerts and Prompt passenger |
+| P0 | Sacco view: Owner → Plate → Conductor totals | Working; totals checked against database counts |
+| P1 | Next-day forecast, with optional Claude narration | Forecast working; the AI summary needs `ANTHROPIC_API_KEY` |
+| P1 | Off-ramp payout to Tando / bitcoin.co.ke via BOLT11 invoice or Lightning address | Working with test invoices; a real Tando payout not yet tried |
+| P1 | Nostr daily summary per vehicle | Working; published and read back from relay.damus.io and nos.lol |
 | Out of scope | USSD for feature phones, full login/auth, production Daraja | Deliberately deferred — see the build notes for reasoning |
 
 > [!NOTE]
@@ -299,7 +311,7 @@ Scope for the build, grouped by priority rather than claimed as finished — thi
 
 ## License
 
-Nauli Sacco is open source under the [MIT License](LICENSE).
+Nauli SaKo is open source under the [MIT License](LICENSE).
 
 ---
 
@@ -307,4 +319,4 @@ Nauli Sacco is open source under the [MIT License](LICENSE).
 
 Built for GirlCode.
 
-</div>building-your-application/deploying) for more details.
+</div>

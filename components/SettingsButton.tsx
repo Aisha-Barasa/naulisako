@@ -32,7 +32,7 @@ export function SettingsButton() {
     setPreference(pref, next);
     setValues({ ...values, [pref]: next });
     if (next && pref === "vibrate") vibrate(VIBRATE.tap);
-    if (next && pref === "readAloud") speak("Results will be read aloud.", { force: true });
+    if (next && pref === "readAloud") speak("Results will be read aloud.", { force: true, fromTap: true });
   }
 
   return (

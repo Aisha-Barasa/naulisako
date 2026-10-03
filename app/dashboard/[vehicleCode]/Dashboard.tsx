@@ -7,7 +7,7 @@ import { ConductorNav } from "@/components/ConductorNav";
 import { BellIcon, BoltIcon, CheckIcon, QrIcon } from "@/components/Icons";
 import { Plate } from "@/components/Plate";
 import { SettingsButton } from "@/components/SettingsButton";
-import { alertsEnabled, chime, enableAlerts, notifyIfHidden, speak, spellOut, vibrate, VIBRATE } from "@/lib/feedback";
+import { alertsEnabled, chime, enableAlerts, notifyIfHidden, primeSpeech, speak, spellOut, vibrate, VIBRATE } from "@/lib/feedback";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { formatNairobiTime } from "@/lib/time";
 import { isPaid, type TxStatus } from "@/lib/tx-public";
@@ -176,6 +176,7 @@ export function Dashboard({ vehicleId, vehicleCode, conductorName, routeName, pa
   }
 
   async function turnOnAlerts() {
+    primeSpeech("Payment alerts are on."); // inside the tap, so later fares can be spoken
     const on = await enableAlerts();
     setAlertsOn(on);
     if (on) {
