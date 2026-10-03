@@ -24,7 +24,7 @@ export default function Home() {
               <a className="block underline" href="/dashboard/KAB123B">
                 Conductor
               </a>
-              <a className="block underline" href="/sacco">
+              <a className="block underline" href="/sacco/c79705ee-573a-4d80-8836-f8fa00c2cf0b">
                 SACCO
               </a>
               <a className="block underline" href="/analytics">
