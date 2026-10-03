@@ -7,9 +7,12 @@ import { useState } from "react";
 export function CodeEntry({
   initial = "",
   prominent = false,
+  showDemo = false,
 }: {
   initial?: string;
   prominent?: boolean;
+  /** Big "Demo data" button that fills in the demo plate (landing page). */
+  showDemo?: boolean;
 }) {
   const router = useRouter();
   const [code, setCode] = useState(initial);
@@ -17,7 +20,7 @@ export function CodeEntry({
 
   return (
     <form
-      className={prominent ? "flex flex-col gap-3" : "flex gap-2"}
+      className={prominent ? "flex flex-col gap-3" : "flex flex-wrap gap-2"}
       onSubmit={(e) => {
         e.preventDefault();
         const clean = code.replace(/\s+/g, "").toUpperCase();
@@ -46,9 +49,9 @@ export function CodeEntry({
       <button type="submit" className={prominent ? "btn btn-ink min-h-14 w-full text-xl" : "btn btn-ink min-h-14 text-xl"}>
         {prominent ? "Continue" : "Go"}
       </button>
-      {prominent && empty ? (
-        <button type="button" className="min-h-11 self-start text-base font-semibold underline" onClick={() => setCode("KAB123B")}>
-          Try KAB123B
+      {(prominent || showDemo) && empty ? (
+        <button type="button" className="btn btn-ghost min-h-14 w-full basis-full text-xl" onClick={() => setCode("KAB123B")}>
+          Demo data
         </button>
       ) : null}
     </form>

@@ -71,7 +71,7 @@ export default async function Home() {
             </p>
             <p className="mt-1 text-base leading-relaxed text-ink/75">Changanua stika ya QR, au weka nambari iliyo chini yake.</p>
             <div className="mt-4">
-              <CodeEntry />
+              <CodeEntry showDemo />
             </div>
           </section>
 
