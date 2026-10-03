@@ -7,8 +7,10 @@ import { Plate } from "@/components/Plate";
 import { PinGate } from "@/components/PinGate";
 import { SaccoTabs } from "@/components/SaccoTabs";
 import { adminSessionOk } from "@/lib/server/admin-pin";
+import { nairobiDate, reporterNpub } from "@/lib/server/nostr";
 import { getSaccoSummary, type SummaryRange } from "@/lib/server/sacco-summary";
 import { formatNairobiDateTime } from "@/lib/time";
+import { NostrPublish } from "./NostrPublish";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "SACCO · Nauli SaKo" };
@@ -123,6 +125,21 @@ export default async function SaccoPage({ params, searchParams }: Props) {
             </section>
           );
         })}
+      </div>
+
+      <div className="pt-6">
+        {range === "7d" ? (
+          <p className="mx-4 rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-base text-stone-700">
+            To publish a public daily report, choose Today or Yesterday.
+          </p>
+        ) : (
+          <NostrPublish
+            saccoId={s.saccoId}
+            date={nairobiDate(range === "yesterday" ? new Date(Date.now() - 24 * 3600_000) : new Date())}
+            dayLabel={rangeLabel}
+            npub={reporterNpub()}
+          />
+        )}
       </div>
 
       <p className="px-4 pt-6 text-sm text-stone-600">

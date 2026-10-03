@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { vibrate, VIBRATE } from "@/lib/feedback";
+import { primeSpeech, vibrate, VIBRATE } from "@/lib/feedback";
 
 const PHONE_KEY = "nauli.phone";
 const MAX_KES = 5000;
@@ -52,6 +52,8 @@ export function PayForm({ vehicleCode, presetFareKes, fromConductor = false }: P
     }
     setError(null);
     setSubmitting(true);
+    // Runs inside the tap, which phones require before a page may speak.
+    primeSpeech(fromConductor ? "Sending the M-Pesa prompt to the passenger." : "Check your phone and enter your M-Pesa PIN.");
     try {
       const res = await fetch("/api/pay", {
         method: "POST",

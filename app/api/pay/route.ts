@@ -13,7 +13,10 @@ const payBody = z.object({
 export async function POST(req: Request) {
   const parsed = payBody.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid request", issues: parsed.error.flatten().fieldErrors }, { status: 400 });
+    return NextResponse.json(
+      { error: "Choose a fare between KES 1 and 5,000 and enter your M-Pesa number.", issues: parsed.error.flatten().fieldErrors },
+      { status: 400 },
+    );
   }
   const vehicleCode = parsed.data.vehicleCode.replace(/\s+/g, "").toUpperCase();
   const { amountKes } = parsed.data;
@@ -36,17 +39,20 @@ export async function POST(req: Request) {
     .maybeSingle<{ id: string; vehicle_code: string }>();
   if (vErr) {
     console.error("pay: vehicle lookup failed", vErr);
-    return NextResponse.json({ error: "Could not look up vehicle" }, { status: 500 });
+    return NextResponse.json({ error: "We couldn't reach our server just now. No money was taken. Try again." }, { status: 500 });
   }
-  if (!vehicle) return NextResponse.json({ error: `Unknown vehicle ${vehicleCode}` }, { status: 404 });
+  if (!vehicle) return NextResponse.json({ error: `We can't find vehicle ${vehicleCode}. Check the code under the QR sticker.` }, { status: 404 });
 
   let stk: Awaited<ReturnType<typeof stkPush>>;
   try {
     stk = await stkPush({ phone, amount: amountKes, accountRef: vehicle.vehicle_code, desc: "Nauli fare" });
   } catch (e) {
-    const message = e instanceof DarajaError ? e.message : "M-Pesa is not responding";
-    console.error("pay: STK push failed", e);
-    return NextResponse.json({ error: `M-Pesa request failed: ${message}` }, { status: 502 });
+    // Log Daraja's detail for us; show the passenger what to do.
+    console.error("pay: STK push failed", e instanceof DarajaError ? `${e.status} ${e.code} ${e.message}` : e);
+    return NextResponse.json(
+      { error: "M-Pesa didn't respond, so no prompt was sent and no money was taken. Wait a moment and try again." },
+      { status: 502 },
+    );
   }
 
   const { data: tx, error: insErr } = await db
@@ -66,7 +72,13 @@ export async function POST(req: Request) {
   if (insErr || !tx) {
     // The prompt is already on the phone; log enough to reconcile by hand.
     console.error(`pay: STK sent but insert failed. CheckoutRequestID=${stk.checkoutRequestId}`, insErr);
-    return NextResponse.json({ error: "Payment started but could not be recorded" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error:
+          "The M-Pesa prompt was sent but we couldn't record it. If you paid, tell the conductor the last 3 characters of your M-Pesa receipt.",
+      },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ txId: tx.id, checkoutRequestId: stk.checkoutRequestId });

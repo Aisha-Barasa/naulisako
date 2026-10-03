@@ -18,7 +18,7 @@ function resultMessage(tx: TxPublic, vehicleCode: string, fromConductor: boolean
     const receipt = tx.receiptLast3 ? ` Receipt ending ${spellOut(tx.receiptLast3)}.` : "";
     return fromConductor
       ? `Passenger paid ${tx.amountKes} shillings. Phone ending ${spellOut(tx.phoneLast3)}.${receipt}`
-      : `Payment successful. ${tx.amountKes} shillings paid to ${plate}. Show the conductor: phone ending ${spellOut(tx.phoneLast3)}.${receipt}`;
+      : `Payment successful. ${tx.amountKes} shillings paid to ${plate}. Tell the conductor: phone ending ${spellOut(tx.phoneLast3)}.${receipt}`;
   }
   return `Payment not completed. ${tx.failureReason ?? ""} No money was taken.`;
 }
@@ -89,13 +89,16 @@ export function StatusView({ initial, vehicleCode, fromConductor = false }: Prop
     speak(message);
   }, [tx, vehicleCode, fromConductor]);
 
-  const readAgain = () => speak(resultMessage(tx, vehicleCode, fromConductor), { force: true });
+  // Decided after mount: the server can't know, and a mismatch would break hydration.
+  const [speechOk, setSpeechOk] = useState(false);
+  useEffect(() => setSpeechOk(canSpeak()), []);
+  const readAgain = () => speak(resultMessage(tx, vehicleCode, fromConductor), { force: true, fromTap: true });
   const liveRegion = (
     <p aria-live="assertive" className="sr-only">
       {liveText}
     </p>
   );
-  const readAgainButton = canSpeak() ? (
+  const readAgainButton = speechOk ? (
     <button type="button" onClick={readAgain} className="btn btn-ghost min-h-14 w-full text-lg">
       <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M11 5 6 9H3v6h3l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
@@ -146,7 +149,7 @@ export function StatusView({ initial, vehicleCode, fromConductor = false }: Prop
 
         <div className="rounded-2xl border-[3px] border-ink bg-matatu p-4 motion-safe:animate-pop-in motion-safe:[animation-delay:260ms]">
           <h2 className="text-lg font-bold leading-tight">
-            Show the conductor <span className="font-semibold text-ink/75">· Onyesha kondakta</span>
+            Tell the conductor <span className="font-semibold text-ink/75">· Mwambie kondakta</span>
           </h2>
           <dl className="mt-3 grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-white px-3 py-3">
@@ -172,7 +175,10 @@ export function StatusView({ initial, vehicleCode, fromConductor = false }: Prop
             Prompt another passenger
           </Link>
         ) : (
-          <p className="text-base text-stone-700">Keep this screen open until the conductor has checked it.</p>
+          <p className="text-base text-stone-700">
+            Say these to the conductor. Your phone stays with you.
+            <span className="block text-stone-600">Mwambie kondakta tarakimu hizi. Simu yako inabaki nawe.</span>
+          </p>
         )}
         {readAgainButton}
         {liveRegion}
