@@ -51,8 +51,12 @@ export function CodeEntry({
         {prominent ? "Continue" : "Go"}
       </button>
       {prominent && empty ? (
-        <button type="button" className="text-left text-base underline" onClick={() => setCode("KAB123B")}>
-          Try KAB123B
+        <button
+          type="button"
+          className="min-h-14 w-full rounded-xl border-2 border-ink bg-white text-xl font-bold text-ink"
+          onClick={() => setCode("KAB123B")}
+        >
+          Demo data
         </button>
       ) : null}
     </form>
