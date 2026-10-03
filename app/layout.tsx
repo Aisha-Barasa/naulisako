@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Nauli Sacco",
+  title: "Nauli SaKo",
   description: "Pay your matatu fare with M-Pesa. Lipa nauli kwa M-Pesa.",
-  applicationName: "Nauli Sacco",
+  applicationName: "Nauli SaKo",
   appleWebApp: { capable: true, title: "Nauli", statusBarStyle: "default" },
 };
 

@@ -19,19 +19,32 @@ function baseUrl(): string {
   return url.replace(/\/$/, "");
 }
 
-async function call(path: string, key: string, init: { method?: string; body?: unknown } = {}): Promise<unknown> {
-  let res: Response;
-  try {
-    res = await fetch(`${baseUrl()}${path}`, {
-      method: init.method ?? "GET",
-      headers: { "X-Api-Key": key, "Content-Type": "application/json" },
-      body: init.body === undefined ? undefined : JSON.stringify(init.body),
-      cache: "no-store",
-      signal: AbortSignal.timeout(20_000),
-    });
-  } catch (e) {
-    throw new LnbitsError(`LNbits unreachable: ${(e as Error).message}`);
+type CallInit = {
+  method?: string;
+  body?: unknown;
+  /** Retries on network errors. Only safe where repeating the request can't move money twice. */
+  retries?: number;
+};
+
+async function call(path: string, key: string, init: CallInit = {}): Promise<unknown> {
+  const retries = init.retries ?? 2;
+  let res: Response | null = null;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      res = await fetch(`${baseUrl()}${path}`, {
+        method: init.method ?? "GET",
+        headers: { "X-Api-Key": key, "Content-Type": "application/json" },
+        body: init.body === undefined ? undefined : JSON.stringify(init.body),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20_000),
+      });
+      break;
+    } catch (e) {
+      if (attempt >= retries) throw new LnbitsError(`LNbits unreachable: ${(e as Error).message}`);
+      await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+    }
   }
+  if (!res) throw new LnbitsError("LNbits unreachable");
   const text = await res.text();
   let json: unknown = null;
   try {
@@ -67,7 +80,7 @@ export async function payInvoice(adminKey: string, bolt11: string): Promise<{ pa
   const json = z
     .object({ payment_hash: z.string() })
     .passthrough()
-    .parse(await call("/api/v1/payments", adminKey, { method: "POST", body: { out: true, bolt11 } }));
+    .parse(await call("/api/v1/payments", adminKey, { method: "POST", body: { out: true, bolt11 }, retries: 0 }));
   return { paymentHash: json.payment_hash };
 }
 

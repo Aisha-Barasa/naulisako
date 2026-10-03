@@ -16,7 +16,7 @@ for (const file of [".env.local", ".env"]) {
   }
 }
 
-const SACCO_NAME = "Nauli Sacco Demo";
+const SACCO_NAME = "Nauli SaKo Demo";
 
 type OwnerSeed = { key: string; ownerName: string; phoneMasked: string };
 type VehicleSeed = {

@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 type Props = { params: { vehicleCode: string } };
 
 export function generateMetadata({ params }: Props): Metadata {
-  return { title: `Pay fare · ${cleanVehicleCode(params.vehicleCode)} · Nauli Sacco` };
+  return { title: `Pay fare · ${cleanVehicleCode(params.vehicleCode)} · Nauli SaKo` };
 }
 
 export default async function PayPage({ params }: Props) {

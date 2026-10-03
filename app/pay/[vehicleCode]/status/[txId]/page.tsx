@@ -7,7 +7,7 @@ import { TX_PUBLIC_COLUMNS, toTxPublic, type TxRowLike } from "@/lib/tx-public";
 import { StatusView } from "./StatusView";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Payment status · Nauli Sacco" };
+export const metadata = { title: "Payment status · Nauli SaKo" };
 
 export default async function StatusPage({ params }: { params: { vehicleCode: string; txId: string } }) {
   const id = z.string().uuid().safeParse(params.txId);

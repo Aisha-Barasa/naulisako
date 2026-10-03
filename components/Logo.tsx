@@ -17,7 +17,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
   return (
     <header className="flex items-center gap-3 border-b-2 border-ink px-4 py-3">
       <Logo />
-      <span className="text-xl font-extrabold tracking-tight">Nauli Sacco</span>
+      <span className="text-xl font-extrabold tracking-tight">Nauli SaKo</span>
       {children ? <span className="ml-auto">{children}</span> : null}
     </header>
   );
