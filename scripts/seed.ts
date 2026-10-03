@@ -6,14 +6,17 @@
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// Node 22 can read .env.local itself — no dotenv needed.
-try {
-  (process as NodeJS.Process & { loadEnvFile?: (path: string) => void }).loadEnvFile?.(".env.local");
-} catch {
-  // fall through to the missing-vars check below
+// Node 22 can read env files itself — no dotenv needed. Same precedence as Next:
+// .env.local first; .env only fills what's still unset.
+for (const file of [".env.local", ".env"]) {
+  try {
+    (process as NodeJS.Process & { loadEnvFile?: (path: string) => void }).loadEnvFile?.(file);
+  } catch {
+    // file absent; the missing-vars check below reports what matters
+  }
 }
 
-const SACCO_NAME = "Nauli Sacco Demo";
+const SACCO_NAME = "Nauli SaKo Demo";
 
 type OwnerSeed = { key: string; ownerName: string; phoneMasked: string };
 type VehicleSeed = {
@@ -44,7 +47,7 @@ const NAIROBI_UTC_OFFSET_H = 3; // EAT, no DST
 function requireEnv(names: string[]): Record<string, string> {
   const missing = names.filter((n) => !process.env[n]);
   if (missing.length) {
-    console.error("Missing env vars in .env.local:\n  " + missing.join("\n  "));
+    console.error("Missing env vars (.env.local or .env):\n  " + missing.join("\n  "));
     process.exit(1);
   }
   return Object.fromEntries(names.map((n) => [n, process.env[n] as string]));
@@ -113,10 +116,23 @@ function expectedFares(dow: number, hour: number): number {
 
 // ---------- LNbits ----------
 
-async function createLnbitsWallet(lnbitsUrl: string, adminKey: string, name: string): Promise<WalletKeys> {
-  const res = await fetch(`${lnbitsUrl.replace(/\/$/, "")}/api/v1/wallet`, {
+// Creating a wallet is account-level. LNbits 1.x refuses a wallet admin key
+// (401 "Missing user ID or access token"), so prefer an account access token,
+// then the account user ID; the admin key only works on older versions.
+async function createLnbitsWallet(lnbitsUrl: string, name: string): Promise<WalletKeys> {
+  const token = process.env.LNBITS_ACCESS_TOKEN;
+  const userId = process.env.LNBITS_USER_ID;
+  const adminKey = process.env.LNBITS_TREASURY_ADMIN_KEY;
+
+  let path = "/api/v1/wallet";
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  else if (userId) path += `?usr=${encodeURIComponent(userId)}`;
+  else if (adminKey) headers["X-Api-Key"] = adminKey;
+
+  const res = await fetch(`${lnbitsUrl.replace(/\/$/, "")}${path}`, {
     method: "POST",
-    headers: { "X-Api-Key": adminKey, "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ name }),
   });
   const text = await res.text();
@@ -141,8 +157,10 @@ function walletsFromEnv(): Record<string, WalletKeys> | null {
 
 function printManualWalletInstructions(lnbitsUrl: string): void {
   console.error(`
-Could not create LNbits wallets via the API on this LNbits version.
-Create them by hand instead:
+Could not create LNbits wallets via the API.
+Either set LNBITS_ACCESS_TOKEN (an account access token allowed to create wallets)
+or LNBITS_USER_ID (your LNbits account's user ID, not a wallet ID) and re-run,
+or create them by hand instead:
   1. Open ${lnbitsUrl} and add 3 wallets: "Nauli KAB123B", "Nauli KCD456C", "Nauli KDE789D".
   2. For each, open "API info" and copy Wallet ID, Invoice/read key, Admin key.
   3. Put them in .env.local on ONE line:
@@ -257,8 +275,10 @@ async function insertInBatches(db: SupabaseClient, rows: SeedTx[], batchSize = 5
 async function main(): Promise<void> {
   const env = requireEnv(["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "LNBITS_URL"]);
   const manualWallets = walletsFromEnv();
-  if (!manualWallets && !process.env.LNBITS_TREASURY_ADMIN_KEY) {
-    requireEnv(["LNBITS_TREASURY_ADMIN_KEY"]);
+  const canCreateWallets = ["LNBITS_ACCESS_TOKEN", "LNBITS_USER_ID", "LNBITS_TREASURY_ADMIN_KEY"].some((n) => process.env[n]);
+  if (!manualWallets && !canCreateWallets) {
+    console.error("Set LNBITS_ACCESS_TOKEN (preferred) or LNBITS_USER_ID, or SEED_WALLETS_JSON, to get vehicle wallets.");
+    process.exit(1);
   }
 
   const btcKes = Number(process.env.BTC_KES_FALLBACK || 13_000_000);
@@ -301,7 +321,7 @@ async function main(): Promise<void> {
       wallet = w;
     } else {
       try {
-        wallet = await createLnbitsWallet(env.LNBITS_URL, process.env.LNBITS_TREASURY_ADMIN_KEY as string, `Nauli ${v.vehicleCode}`);
+        wallet = await createLnbitsWallet(env.LNBITS_URL, `Nauli ${v.vehicleCode}`);
       } catch (e) {
         console.error(`Wallet creation failed for ${v.vehicleCode}: ${(e as Error).message}`);
         printManualWalletInstructions(env.LNBITS_URL);

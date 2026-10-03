@@ -12,6 +12,8 @@ export function getSupabaseAdmin(): SupabaseClient {
   }
   admin = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Next 14 caches server fetch() by default; DB reads must always be live.
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
   });
   return admin;
 }
