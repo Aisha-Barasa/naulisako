@@ -1,4 +1,4 @@
--- Nauli Sacco initial schema. Run in the Supabase SQL editor.
+-- Nauli SaKo initial schema. Run in the Supabase SQL editor.
 
 create extension if not exists pgcrypto;
 
