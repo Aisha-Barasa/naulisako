@@ -7,7 +7,7 @@ import { Plate } from "@/components/Plate";
 import { PinGate } from "@/components/PinGate";
 import { SaccoTabs } from "@/components/SaccoTabs";
 import { adminSessionOk } from "@/lib/server/admin-pin";
-import { recentPayouts } from "@/lib/server/payout";
+import { recentPayouts, refreshPendingPayouts } from "@/lib/server/payout";
 import { getSaccoSummary } from "@/lib/server/sacco-summary";
 import { formatNairobiDateTime } from "@/lib/time";
 import { PayoutForm } from "./PayoutForm";
@@ -32,6 +32,7 @@ export default async function PayoutPage({ params }: { params: { saccoId: string
   }
   const id = z.string().uuid().safeParse(params.saccoId);
   if (!id.success) notFound();
+  await refreshPendingPayouts(id.data);
   const [summary, payouts] = await Promise.all([getSaccoSummary(id.data, "today"), recentPayouts(id.data)]);
   if (!summary) notFound();
   const vehicles = summary.owners

@@ -91,16 +91,24 @@ export async function getBalance(key: string): Promise<number> {
 }
 
 const paymentStatus = z
-  .object({ paid: z.boolean(), details: z.object({ bolt11: z.string().optional() }).passthrough().nullish() })
+  .object({
+    paid: z.boolean(),
+    status: z.string().optional(),
+    details: z.object({ bolt11: z.string().optional(), status: z.string().optional() }).passthrough().nullish(),
+  })
   .passthrough();
 
 /** A payment on this key's wallet by hash. Unknown hash → not paid, no bolt11. */
-export async function getPayment(key: string, paymentHash: string): Promise<{ paid: boolean; bolt11: string | null }> {
+export async function getPayment(
+  key: string,
+  paymentHash: string,
+): Promise<{ paid: boolean; failed: boolean; bolt11: string | null }> {
   try {
     const json = paymentStatus.parse(await call(`/api/v1/payments/${paymentHash}`, key));
-    return { paid: json.paid, bolt11: json.details?.bolt11 ?? null };
+    const status = (json.status ?? json.details?.status ?? "").toLowerCase();
+    return { paid: json.paid, failed: status === "failed", bolt11: json.details?.bolt11 ?? null };
   } catch (e) {
-    if (e instanceof LnbitsError && e.status === 404) return { paid: false, bolt11: null };
+    if (e instanceof LnbitsError && e.status === 404) return { paid: false, failed: false, bolt11: null };
     throw e;
   }
 }

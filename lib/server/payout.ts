@@ -167,6 +167,35 @@ export type PayoutRow = {
   vehicles: { vehicle_code: string };
 };
 
+/**
+ * Lightning payouts can stay in flight for a while. Ask LNbits about every pending
+ * payout in this SACCO and record the outcome, so the page never shows a stale "pending".
+ */
+export async function refreshPendingPayouts(saccoId: string): Promise<void> {
+  const db = getSupabaseAdmin();
+  const { data, error } = await db
+    .from("payouts")
+    .select("id, ln_payment_hash, vehicles!inner(sacco_id, vehicle_wallets(lnbits_admin_key))")
+    .eq("status", "pending")
+    .eq("vehicles.sacco_id", saccoId)
+    .not("ln_payment_hash", "is", null)
+    .returns<{ id: string; ln_payment_hash: string; vehicles: { vehicle_wallets: { lnbits_admin_key: string } | null } }[]>();
+  if (error || !data?.length) return;
+  await Promise.all(
+    data.map(async (p) => {
+      const key = p.vehicles.vehicle_wallets?.lnbits_admin_key;
+      if (!key) return;
+      const result = await getPayment(key, p.ln_payment_hash).catch(() => null);
+      if (!result || (!result.paid && !result.failed)) return; // still in flight, or LNbits unreachable
+      await db
+        .from("payouts")
+        .update(result.paid ? { status: "paid", error: null } : { status: "failed", error: "Lightning payment failed; sats returned to the wallet" })
+        .eq("id", p.id)
+        .eq("status", "pending");
+    }),
+  );
+}
+
 export async function recentPayouts(saccoId: string, limit = 10): Promise<PayoutRow[]> {
   const { data, error } = await getSupabaseAdmin()
     .from("payouts")
