@@ -1,3 +1,5 @@
+import { SettingsButton } from "./SettingsButton";
+
 // Inline SVG so the passenger page needs no image downloads.
 export function Logo({ className = "h-9 w-9" }: { className?: string }) {
   return (
@@ -13,12 +15,18 @@ export function Logo({ className = "h-9 w-9" }: { className?: string }) {
   );
 }
 
+/** Site header: home link, optional extras (plate, links), accessibility settings. */
 export function Header({ children }: { children?: React.ReactNode }) {
   return (
-    <header className="flex items-center gap-3 border-b-2 border-ink px-4 py-3">
-      <Logo />
-      <span className="text-xl font-extrabold tracking-tight">Nauli SaKo</span>
-      {children ? <span className="ml-auto">{children}</span> : null}
+    <header className="flex items-center gap-2 border-b-2 border-ink px-4 py-2.5">
+      <a href="/" className="flex min-h-12 items-center gap-2.5 rounded-lg" aria-label="Nauli SaKo home">
+        <Logo />
+        <span className="hidden font-display text-2xl font-extrabold uppercase tracking-[0.02em] min-[380px]:inline">Nauli SaKo</span>
+      </a>
+      <span className="ml-auto flex items-center gap-2">
+        {children}
+        <SettingsButton />
+      </span>
     </header>
   );
 }

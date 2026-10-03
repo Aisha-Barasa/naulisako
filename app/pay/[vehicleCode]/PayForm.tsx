@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { vibrate, VIBRATE } from "@/lib/feedback";
 
 const PHONE_KEY = "nauli.phone";
 const MAX_KES = 5000;
@@ -16,7 +17,9 @@ function looksLikeKePhone(input: string): boolean {
   return /^(?:\+?254|0)?[17]\d{8}$/.test(input.replace(/[\s\-()]/g, ""));
 }
 
-export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; presetFareKes: number }) {
+type Props = { vehicleCode: string; presetFareKes: number; fromConductor?: boolean };
+
+export function PayForm({ vehicleCode, presetFareKes, fromConductor = false }: Props) {
   const router = useRouter();
   const options = fareOptions(presetFareKes);
   const [fare, setFare] = useState<number | "other">(options[0]);
@@ -26,14 +29,16 @@ export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; p
   const [error, setError] = useState<string | null>(null);
 
   // Passenger's own device: remembering their number is a convenience, not shared state.
+  // On the conductor's phone it would be a stranger's number, so never load or save it.
   useEffect(() => {
+    if (fromConductor) return;
     try {
       const saved = localStorage.getItem(PHONE_KEY);
       if (saved) setPhone(saved);
     } catch {
       // storage blocked; they just type it
     }
-  }, []);
+  }, [fromConductor]);
 
   const amount = fare === "other" ? Number(other) : fare;
   const amountOk = Number.isInteger(amount) && amount >= 1 && amount <= MAX_KES;
@@ -42,7 +47,9 @@ export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; p
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!amountOk) return setError(`Enter a fare between KES 1 and ${MAX_KES.toLocaleString()}.`);
-    if (!phoneOk) return setError("Enter your M-Pesa number, e.g. 0712 345 678.");
+    if (!phoneOk) {
+      return setError(fromConductor ? "Enter the passenger's M-Pesa number, e.g. 0712 345 678." : "Enter your M-Pesa number, e.g. 0712 345 678.");
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -53,12 +60,15 @@ export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; p
       });
       const json = (await res.json().catch(() => ({}))) as { txId?: string; error?: string };
       if (!res.ok || !json.txId) throw new Error(json.error ?? "Could not start the payment. Try again.");
-      try {
-        localStorage.setItem(PHONE_KEY, phone);
-      } catch {
-        // ignore
+      if (!fromConductor) {
+        try {
+          localStorage.setItem(PHONE_KEY, phone);
+        } catch {
+          // ignore
+        }
       }
-      router.push(`/pay/${vehicleCode}/status/${json.txId}`);
+      vibrate(VIBRATE.tap);
+      router.push(`/pay/${vehicleCode}/status/${json.txId}${fromConductor ? "?from=conductor" : ""}`);
     } catch (err) {
       setError((err as Error).message);
       setSubmitting(false);
@@ -67,23 +77,36 @@ export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; p
 
   return (
     <form onSubmit={submit} className="space-y-6 px-4 py-5">
+      {fromConductor ? (
+        <div className="rounded-2xl border-2 border-ink bg-matatu-soft px-4 py-3">
+          <h1 className="font-display text-3xl font-extrabold uppercase leading-none">Prompt passenger</h1>
+          <p className="mt-1 text-base text-stone-700">
+            For a passenger who can&apos;t scan. Enter their number and send the M-Pesa prompt to their phone.
+          </p>
+        </div>
+      ) : null}
       <fieldset className="space-y-3">
         <legend className="mb-1">
-          <span className="block text-2xl font-extrabold">Choose fare</span>
-          <span className="block text-base text-neutral-600">Chagua nauli</span>
+          <span className="block font-display text-3xl font-extrabold uppercase">Choose fare</span>
+          <span className="block text-base text-stone-600">Chagua nauli</span>
         </legend>
         <div className="grid grid-cols-3 gap-3">
           {options.map((f) => (
             <button
               key={f}
               type="button"
-              onClick={() => setFare(f)}
+              onClick={() => {
+                setFare(f);
+                vibrate(VIBRATE.tap);
+              }}
+              aria-label={`KES ${f}`}
               aria-pressed={fare === f}
-              className={`rounded-xl border-2 border-ink py-4 text-2xl font-black ${
-                fare === f ? "bg-ink text-white" : "bg-white"
+              className={`flex min-h-20 flex-col items-center justify-center rounded-xl border-2 border-ink transition-[transform,background-color,box-shadow] duration-150 ease-out active:scale-[0.96] ${
+                fare === f ? "bg-matatu shadow-[inset_0_0_0_2px_#16130f]" : "bg-white hover:bg-stone-50"
               }`}
             >
-              {f}
+              <span className="text-xs font-bold text-stone-700">KES</span>
+              <span className="num font-display text-4xl font-extrabold leading-none">{f}</span>
             </button>
           ))}
         </div>
@@ -91,24 +114,22 @@ export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; p
           type="button"
           onClick={() => setFare("other")}
           aria-pressed={fare === "other"}
-          className={`w-full rounded-xl border-2 border-ink py-3 text-xl font-bold ${
-            fare === "other" ? "bg-ink text-white" : "bg-white"
-          }`}
+          className={`btn w-full text-lg ${fare === "other" ? "bg-matatu shadow-[inset_0_0_0_2px_#16130f]" : "btn-ghost"}`}
         >
           Other amount
         </button>
         {fare === "other" ? (
           <label className="block">
             <span className="sr-only">Other amount in KES</span>
-            <div className="flex items-center rounded-xl border-2 border-ink px-4">
-              <span className="text-xl font-bold">KES</span>
+            <div className="flex items-center rounded-xl border-2 border-ink px-4 focus-within:shadow-[0_0_0_4px_rgb(250_204_21/0.55)]">
+              <span className="text-lg font-bold text-stone-700">KES</span>
               <input
                 value={other}
                 onChange={(e) => setOther(e.target.value.replace(/\D/g, ""))}
                 inputMode="numeric"
                 autoFocus
                 placeholder="0"
-                className="min-w-0 flex-1 bg-transparent px-3 py-3 text-2xl font-bold outline-none"
+                className="num min-w-0 flex-1 bg-transparent px-3 py-2 font-display text-4xl font-extrabold outline-none"
               />
             </div>
           </label>
@@ -117,8 +138,10 @@ export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; p
 
       <label className="block space-y-2">
         <span className="block">
-          <span className="block text-2xl font-extrabold">M-Pesa number</span>
-          <span className="block text-base text-neutral-600">Nambari ya M-Pesa</span>
+          <span className="block font-display text-3xl font-extrabold uppercase">
+            {fromConductor ? "Passenger's M-Pesa number" : "M-Pesa number"}
+          </span>
+          <span className="block text-base text-stone-600">{fromConductor ? "Nambari ya M-Pesa ya abiria" : "Nambari ya M-Pesa"}</span>
         </span>
         <input
           value={phone}
@@ -127,7 +150,7 @@ export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; p
           inputMode="tel"
           autoComplete="tel"
           placeholder="0712 345 678"
-          className="w-full rounded-xl border-2 border-ink px-4 py-3 text-2xl font-bold tracking-wide"
+          className="field num text-2xl tracking-wide"
         />
       </label>
 
@@ -140,14 +163,27 @@ export function PayForm({ vehicleCode, presetFareKes }: { vehicleCode: string; p
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-2xl border-2 border-ink bg-matatu py-5 text-2xl font-black disabled:opacity-60"
+        className="btn btn-primary w-full flex-col gap-0 rounded-2xl py-4"
       >
-        {submitting ? "Sending…" : `Pay KES ${amountOk ? amount.toLocaleString() : "—"}`}
-        <span className="block text-base font-semibold">{submitting ? "Inatuma…" : "Lipa nauli"}</span>
+        <span className="num font-display text-4xl font-extrabold uppercase leading-none">
+          {submitting
+            ? "Sending…"
+            : `${fromConductor ? "Send prompt" : "Pay"} KES ${amountOk ? amount.toLocaleString() : "—"}`}
+        </span>
+        <span className="text-base font-semibold">{submitting ? "Inatuma…" : fromConductor ? "Tuma ombi" : "Lipa nauli"}</span>
       </button>
-      <p className="text-center text-base text-neutral-700">
-        You&apos;ll get an M-Pesa prompt on your phone.
-        <span className="block text-neutral-600">Utapokea ombi la M-Pesa kwenye simu yako.</span>
+      <p className="text-center text-base text-stone-700">
+        {fromConductor ? (
+          <>
+            The passenger gets an M-Pesa prompt on their phone and enters their PIN.
+            <span className="block text-stone-600">Abiria atapokea ombi la M-Pesa na kuweka PIN yake.</span>
+          </>
+        ) : (
+          <>
+            You&apos;ll get an M-Pesa prompt on your phone.
+            <span className="block text-stone-600">Utapokea ombi la M-Pesa kwenye simu yako.</span>
+          </>
+        )}
       </p>
     </form>
   );
