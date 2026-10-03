@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { Header } from "@/components/Logo";
+import { Plate } from "@/components/Plate";
 import { PinGate } from "@/components/PinGate";
 import { adminSessionOk } from "@/lib/server/admin-pin";
 import { getSaccoSummary, type SummaryRange } from "@/lib/server/sacco-summary";
@@ -48,16 +49,16 @@ export default async function SaccoPage({ params, searchParams }: Props) {
             key={r.key}
             href={`/sacco/${s.saccoId}?range=${r.key}`}
             aria-current={r.key === range ? "page" : undefined}
-            className={`rounded-full border-2 border-ink px-4 py-1.5 text-base font-bold ${r.key === range ? "bg-ink text-white" : "bg-white"}`}
+            className={`inline-flex min-h-11 items-center rounded-full border-2 border-ink px-4 text-base font-bold transition-colors duration-150 ${r.key === range ? "bg-ink text-white" : "bg-white hover:bg-stone-100"}`}
           >
             {r.label}
           </Link>
         ))}
         <span className="ml-auto flex gap-2">
-          <Link href={`/analytics/${s.saccoId}`} className="rounded-full border-2 border-ink bg-matatu px-4 py-1.5 text-base font-bold">
+          <Link href={`/analytics/${s.saccoId}`} className="btn btn-primary min-h-11 rounded-full px-4 text-base">
             Forecast
           </Link>
-          <Link href={`/sacco/${s.saccoId}/payout`} className="rounded-full border-2 border-ink bg-matatu px-4 py-1.5 text-base font-bold">
+          <Link href={`/sacco/${s.saccoId}/payout`} className="btn btn-primary min-h-11 rounded-full px-4 text-base">
             Cash out
           </Link>
         </span>
@@ -71,8 +72,8 @@ export default async function SaccoPage({ params, searchParams }: Props) {
           { label: "Wallets now", value: `${s.totals.walletSats.toLocaleString()} sats` },
         ].map((t) => (
           <div key={t.label} className="border-b-2 border-r-2 border-ink px-3 py-3 sm:border-b-0">
-            <p className="text-xs font-bold uppercase">{t.label}</p>
-            <p className="text-2xl font-black">{t.value}</p>
+            <p className="text-xs font-bold uppercase tracking-wider">{t.label}</p>
+            <p className="num font-display text-3xl font-extrabold leading-tight">{t.value}</p>
           </div>
         ))}
       </section>
@@ -82,15 +83,15 @@ export default async function SaccoPage({ params, searchParams }: Props) {
           const ownerKes = o.vehicles.reduce((sum, v) => sum + v.kes, 0);
           return (
             <section key={o.ownerName} className="overflow-hidden rounded-2xl border-2 border-ink">
-              <header className="flex items-baseline justify-between gap-3 border-b-2 border-ink bg-neutral-100 px-4 py-3">
-                <h2 className="text-xl font-extrabold">{o.ownerName}</h2>
-                <p className="text-base font-bold">
+              <header className="flex items-baseline justify-between gap-3 border-b-2 border-ink bg-stone-100 px-4 py-3">
+                <h2 className="font-display text-2xl font-extrabold uppercase">{o.ownerName}</h2>
+                <p className="num text-base font-bold">
                   KES {ownerKes.toLocaleString()} · {o.vehicles.length} vehicle{o.vehicles.length === 1 ? "" : "s"}
                 </p>
               </header>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] text-left text-base">
-                  <thead className="text-xs uppercase text-neutral-600">
+                <table className="num w-full min-w-[640px] text-left text-base">
+                  <thead className="text-xs uppercase text-stone-600">
                     <tr>
                       <th className="px-4 py-2">Plate</th>
                       <th className="px-2 py-2">Conductor</th>
@@ -104,10 +105,13 @@ export default async function SaccoPage({ params, searchParams }: Props) {
                   </thead>
                   <tbody>
                     {o.vehicles.map((v) => (
-                      <tr key={v.vehicleCode} className="border-t border-neutral-200">
+                      <tr key={v.vehicleCode} className="border-t border-stone-200">
                         <td className="px-4 py-3">
-                          <Link href={`/dashboard/${v.vehicleCode}`} className="font-black tracking-wider underline decoration-2 underline-offset-4">
-                            {v.vehicleCode}
+                          <Link
+                            href={`/dashboard/${v.vehicleCode}`}
+                            className="inline-block rounded-md transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-95"
+                          >
+                            <Plate code={v.vehicleCode} size="sm" />
                           </Link>
                         </td>
                         <td className="px-2 py-3">{v.conductorName ?? "—"}</td>
@@ -127,7 +131,7 @@ export default async function SaccoPage({ params, searchParams }: Props) {
         })}
       </div>
 
-      <p className="px-4 pt-6 text-sm text-neutral-600">
+      <p className="px-4 pt-6 text-sm text-stone-600">
         Totals count paid fares (M-Pesa confirmed). Sats count fares already settled to vehicle wallets. Wallet balances are live, so they
         drop after a cash-out.
       </p>

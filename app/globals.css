@@ -2,14 +2,152 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Light, high-contrast on purpose: read outdoors in direct sun. */
-:root {
-  color-scheme: light;
+/* Light, high-contrast on purpose: read outdoors in direct sun, on a moving matatu. */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent; /* no grey flash on tap; controls have their own :active */
+    overscroll-behavior-y: none; /* no accidental pull-to-refresh on the dashboard */
+    scrollbar-color: #a8a29e transparent;
+  }
+
+  body {
+    @apply bg-white text-ink antialiased;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    caret-color: #16130f;
+    accent-color: #16130f;
+  }
+
+  ::selection {
+    background: #facc15;
+    color: #16130f;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 2px;
+  }
+
+  /* Controls: instant press response, no long-press text selection, no double-tap delay. */
+  button,
+  a,
+  summary,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+  button,
+  summary,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* iOS zooms into inputs under 16px; keep every field at 16px or more. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+  ::placeholder {
+    color: #78716c; /* stone-500: 4.8:1 on white */
+    opacity: 1;
+  }
+
+  :where(a, button, input, select, textarea, summary):focus-visible {
+    outline: 3px solid #16130f;
+    outline-offset: 2px;
+  }
 }
 
-body {
-  background: #ffffff;
-  color: #0a0a0a;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  -webkit-tap-highlight-color: transparent;
+@layer components {
+  /* One button vocabulary for every screen. */
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-ink px-5 font-bold
+      transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.97]
+      disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+  }
+  /* Plain colours (not theme keys) so these never depend on a cached Tailwind config. */
+  .btn-primary {
+    background-color: #facc15;
+    color: #16130f;
+  }
+  .btn-ink {
+    background-color: #16130f;
+    color: #ffffff;
+  }
+  .btn-ghost {
+    background-color: #ffffff;
+    color: #16130f;
+  }
+  .btn-primary:active {
+    background-color: #eab308;
+  }
+  .btn-ink:active {
+    background-color: #292524;
+  }
+  .btn-ghost:active {
+    background-color: #f5f5f4;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover {
+      background-color: #eab308;
+    }
+    .btn-ink:hover {
+      background-color: #292524;
+    }
+    .btn-ghost:hover {
+      background-color: #f5f5f4;
+    }
+  }
+
+  .field {
+    @apply min-h-12 w-full rounded-xl border-2 border-ink bg-white px-4 py-3 font-bold transition-shadow duration-150
+      focus:shadow-[0_0_0_4px_rgb(250_204_21/0.55)] focus:outline-none;
+  }
+
+  .label {
+    @apply text-sm font-bold text-stone-700;
+  }
+
+  /* Data: digits line up. */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Larger text: every rem-based size scales up. */
+html[data-text="large"] {
+  font-size: 118.75%;
+}
+
+/* High contrast: secondary text becomes full ink, outlines get heavier. */
+html[data-contrast="high"] {
+  --hc: 1;
+}
+html[data-contrast="high"] :where(.text-stone-500, .text-stone-600, .text-stone-700, .text-stone-300) {
+  color: #16130f;
+}
+html[data-contrast="high"] :where(.bg-ink) :where(.text-stone-300) {
+  color: #ffffff;
+}
+html[data-contrast="high"] :where(.border-stone-200, .border-stone-300) {
+  border-color: #16130f;
+}
+html[data-contrast="high"] ::placeholder {
+  color: #44403c;
+}
+html[data-contrast="high"] :where(a, button, input, select, textarea, summary):focus-visible {
+  outline-width: 4px;
 }

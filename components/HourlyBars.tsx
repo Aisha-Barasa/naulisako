@@ -52,9 +52,9 @@ export function HourlyBars({ title, bars, line, upToHour, highlight }: Props) {
   return (
     <figure className="space-y-2">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="text-lg font-extrabold">{title}</span>
+        <span className="font-display text-2xl font-extrabold uppercase leading-tight">{title}</span>
         {line ? (
-          <span className="flex gap-4 text-sm text-neutral-700">
+          <span className="flex gap-4 text-sm text-stone-700">
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-3 w-3 rounded-sm" style={{ background: BAR }} aria-hidden="true" />
               {bars.label}
@@ -111,11 +111,11 @@ export function HourlyBars({ title, bars, line, upToHour, highlight }: Props) {
       </svg>
 
       <details className="text-sm">
-        <summary className="cursor-pointer font-semibold text-neutral-700">Show as table</summary>
+        <summary className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-stone-700 underline">Show as table</summary>
         <div className="mt-2 max-h-64 overflow-auto">
-          <table className="w-full text-left">
+          <table className="num w-full text-left">
             <thead>
-              <tr className="text-xs uppercase text-neutral-600">
+              <tr className="text-xs uppercase text-stone-600">
                 <th className="py-1 pr-4">Hour</th>
                 <th className="py-1 pr-4 text-right">{bars.label} (KES)</th>
                 {line ? <th className="py-1 text-right">{line.label} (KES)</th> : null}
@@ -123,7 +123,7 @@ export function HourlyBars({ title, bars, line, upToHour, highlight }: Props) {
             </thead>
             <tbody>
               {bars.values.map((v, h) => (
-                <tr key={h} className="border-t border-neutral-200">
+                <tr key={h} className="border-t border-stone-200">
                   <td className="py-1 pr-4">{hh(h)}</td>
                   <td className="py-1 pr-4 text-right">{fmt(v)}</td>
                   {line ? <td className="py-1 text-right">{fmt(line.values[h])}</td> : null}

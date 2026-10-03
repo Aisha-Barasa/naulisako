@@ -22,11 +22,18 @@ export function AiBriefing({ saccoId }: { saccoId: string }) {
   }, [saccoId]);
 
   return (
-    <section className="rounded-2xl border-2 border-ink p-4" aria-live="polite">
-      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-neutral-600">AI summary · written by Claude from the numbers below</p>
-      {state.status === "loading" ? <p className="animate-pulse text-base text-neutral-600">Writing today&apos;s briefing…</p> : null}
+    <section className="rounded-2xl border-2 border-ink bg-matatu-soft p-4" aria-live="polite">
+      <h2 className="font-display text-2xl font-extrabold uppercase">AI summary</h2>
+      <p className="mb-2 text-sm text-stone-700">Written by Claude from the numbers on this page.</p>
+      {state.status === "loading" ? (
+        <div className="space-y-2" aria-label="Writing the briefing">
+          <div className="h-4 w-full rounded bg-ink/10 motion-safe:animate-pulse" />
+          <div className="h-4 w-11/12 rounded bg-ink/10 motion-safe:animate-pulse" />
+          <div className="h-4 w-3/4 rounded bg-ink/10 motion-safe:animate-pulse" />
+        </div>
+      ) : null}
       {state.status === "ok" ? <p className="text-lg leading-relaxed">{state.text}</p> : null}
-      {state.status === "error" ? <p className="text-base text-neutral-600">{state.message}</p> : null}
+      {state.status === "error" ? <p className="text-base text-stone-600">{state.message}</p> : null}
     </section>
   );
 }

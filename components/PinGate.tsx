@@ -25,8 +25,8 @@ export function PinGate({ title }: { title: string }) {
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-sm space-y-4 px-4 py-10">
-      <h1 className="text-2xl font-extrabold">{title}</h1>
-      <p className="text-base text-neutral-700">Enter the demo PIN to continue.</p>
+      <h1 className="font-display text-4xl font-extrabold uppercase">{title}</h1>
+      <p className="text-base text-stone-700">Enter the demo PIN to continue.</p>
       <input
         value={pin}
         onChange={(e) => setPin(e.target.value)}
@@ -34,10 +34,10 @@ export function PinGate({ title }: { title: string }) {
         inputMode="numeric"
         autoFocus
         aria-label="PIN"
-        className="w-full rounded-xl border-2 border-ink px-4 py-3 text-2xl tracking-widest"
+        className="field text-2xl tracking-[0.3em]"
       />
       {error ? <p role="alert" className="font-semibold text-red-800">{error}</p> : null}
-      <button type="submit" disabled={busy || !pin} className="w-full rounded-xl bg-ink py-3 text-xl font-bold text-white disabled:opacity-60">
+      <button type="submit" disabled={busy || !pin} className="btn btn-ink w-full text-xl">
         {busy ? "Checking…" : "Continue"}
       </button>
     </form>

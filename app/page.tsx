@@ -21,14 +21,23 @@ async function demoSaccoId(): Promise<string | null> {
   }
 }
 
+function Chevron() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+      <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default async function Home() {
   const saccoId = await demoSaccoId();
   const links = [
-    { href: `/dashboard/${DEMO_VEHICLE}`, label: "Conductor" },
+    { href: `/pay/${DEMO_VEHICLE}`, label: "Pay a fare", sub: "Passenger" },
+    { href: `/dashboard/${DEMO_VEHICLE}`, label: "Conductor dashboard", sub: DEMO_VEHICLE },
     ...(saccoId
       ? [
-          { href: `/sacco/${saccoId}`, label: "SACCO" },
-          { href: `/analytics/${saccoId}`, label: "Forecast" },
+          { href: `/sacco/${saccoId}`, label: "SACCO view", sub: "Owners · PIN" },
+          { href: `/analytics/${saccoId}`, label: "Forecast", sub: "Tomorrow · PIN" },
         ]
       : []),
   ];
@@ -44,20 +53,40 @@ export default async function Home() {
         <div className="h-36" aria-hidden="true" />
         <div className="min-h-[calc(100vh-9rem)] bg-white">
           <Header />
-          <section className="space-y-6 px-4 py-6">
-            <p className="text-lg leading-snug">
+
+          <section className="px-4 py-5">
+            <h1 className="font-display text-[2.6rem] font-extrabold uppercase leading-[0.95] tracking-[-0.01em]">
+              Matatu fares by M-Pesa, settled per vehicle.
+            </h1>
+            <p className="mt-3 max-w-[38ch] text-lg leading-snug text-stone-700">
               Pay the fare with M-Pesa. Each vehicle keeps its own wallet. The conductor checks it without taking your phone.
             </p>
-            <CodeEntry prominent />
-            <nav className="space-y-2 border-t-2 border-ink pt-4 text-base" aria-label="Demo">
-              <p className="text-sm font-semibold text-neutral-600">Demo</p>
-              {links.map((l) => (
-                <Link key={l.href} className="block underline" href={l.href}>
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
           </section>
+
+          <section className="space-y-2 border-y-2 border-ink bg-matatu px-4 py-5" aria-labelledby="pay-heading">
+            <h2 id="pay-heading" className="font-display text-2xl font-extrabold uppercase">
+              Pay your fare
+            </h2>
+            <p className="text-base text-ink/80">Scan the QR sticker inside the matatu, or type the code printed under it.<span className="block">Changanua stika ya QR, au weka nambari iliyo chini yake.</span></p>
+            <CodeEntry />
+          </section>
+
+          <nav className="space-y-2 px-4 pb-8 pt-6" aria-labelledby="demo-heading">
+            <h2 id="demo-heading" className="text-lg font-bold">
+              Try the demo
+            </h2>
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="flex min-h-14 items-center gap-3 rounded-xl border-2 border-ink bg-white px-4 py-3 transition-[transform,background-color] duration-150 ease-out hover:bg-matatu-soft active:scale-[0.98] active:bg-matatu-soft"
+              >
+                <span className="flex-1 text-lg font-bold">{l.label}</span>
+                <span className="text-sm text-stone-600">{l.sub}</span>
+                <Chevron />
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </main>

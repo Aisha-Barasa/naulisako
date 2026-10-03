@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { HourlyBars } from "@/components/HourlyBars";
 import { Header } from "@/components/Logo";
+import { Plate } from "@/components/Plate";
 import { PinGate } from "@/components/PinGate";
 import { adminSessionOk } from "@/lib/server/admin-pin";
 import { briefingEnabled } from "@/lib/server/briefing";
@@ -36,16 +37,16 @@ export default async function AnalyticsPage({ params }: { params: { saccoId: str
   return (
     <main className="mx-auto max-w-4xl space-y-6 pb-12">
       <Header>
-        <Link href={`/sacco/${f.saccoId}`} className="text-base font-bold underline">
+        <Link href={`/sacco/${f.saccoId}`} className="inline-flex min-h-11 items-center text-base font-bold underline">
           {f.saccoName}
         </Link>
       </Header>
 
       <section className="px-4">
-        <h1 className="text-2xl font-black">
+        <h1 className="font-display text-4xl font-extrabold uppercase leading-none">
           Tomorrow · {f.tomorrow.weekday} {f.tomorrow.date}
         </h1>
-        <p className="text-base text-neutral-700">Projected from the average of the last 4 {f.tomorrow.weekday}s.</p>
+        <p className="text-base text-stone-700">Projected from the average of the last 4 {f.tomorrow.weekday}s.</p>
       </section>
 
       <section className="mx-4 grid grid-cols-2 overflow-hidden rounded-2xl border-2 border-ink bg-matatu sm:grid-cols-4">
@@ -56,8 +57,8 @@ export default async function AnalyticsPage({ params }: { params: { saccoId: str
           { label: "Best 8h shift", value: `${hh(f.fleet.shift.start)}–${hh(f.fleet.shift.end)}` },
         ].map((t) => (
           <div key={t.label} className="border-b-2 border-r-2 border-ink px-3 py-3 sm:border-b-0">
-            <p className="text-xs font-bold uppercase">{t.label}</p>
-            <p className="text-xl font-black">{t.value}</p>
+            <p className="text-xs font-bold uppercase tracking-wider">{t.label}</p>
+            <p className="num font-display text-2xl font-extrabold leading-tight">{t.value}</p>
           </div>
         ))}
       </section>
@@ -90,10 +91,10 @@ export default async function AnalyticsPage({ params }: { params: { saccoId: str
       </section>
 
       <section className="mx-4 overflow-hidden rounded-2xl border-2 border-ink">
-        <h2 className="border-b-2 border-ink bg-neutral-100 px-4 py-3 text-xl font-extrabold">By vehicle · tomorrow</h2>
+        <h2 className="border-b-2 border-ink bg-stone-100 px-4 py-3 font-display text-2xl font-extrabold uppercase">By vehicle · tomorrow</h2>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left text-base">
-            <thead className="text-xs uppercase text-neutral-600">
+          <table className="num w-full min-w-[560px] text-left text-base">
+            <thead className="text-xs uppercase text-stone-600">
               <tr>
                 <th className="px-4 py-2">Plate</th>
                 <th className="px-2 py-2">Conductor</th>
@@ -105,8 +106,10 @@ export default async function AnalyticsPage({ params }: { params: { saccoId: str
             </thead>
             <tbody>
               {f.vehicles.map((v) => (
-                <tr key={v.vehicleCode} className="border-t border-neutral-200">
-                  <td className="px-4 py-3 font-black tracking-wider">{v.vehicleCode}</td>
+                <tr key={v.vehicleCode} className="border-t border-stone-200">
+                  <td className="px-4 py-3">
+                    <Plate code={v.vehicleCode} size="sm" />
+                  </td>
                   <td className="px-2 py-3">{v.conductorName ?? "—"}</td>
                   <td className="px-2 py-3 text-right font-bold">{v.tomorrowKes.toLocaleString()}</td>
                   <td className="px-2 py-3 text-right">{v.tomorrowFares}</td>
@@ -121,7 +124,7 @@ export default async function AnalyticsPage({ params }: { params: { saccoId: str
         </div>
       </section>
 
-      <p className="px-4 text-sm text-neutral-600">
+      <p className="px-4 text-sm text-stone-600">
         Statistical projection: mean takings per weekday and hour over the last 28 days. Not a trained model; holidays and weather aren&apos;t
         accounted for.
       </p>

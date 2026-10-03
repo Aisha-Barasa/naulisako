@@ -74,14 +74,14 @@ export function PayoutForm({ saccoId, vehicles }: { saccoId: string; vehicles: V
       <form onSubmit={onPreview} className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1">
-            <span className="text-sm font-bold uppercase">Vehicle</span>
+            <span className="label">Vehicle</span>
             <select
               value={vehicleCode}
               onChange={(e) => {
                 setVehicleCode(e.target.value);
                 setPreview(null);
               }}
-              className="w-full rounded-xl border-2 border-ink bg-white px-3 py-3 text-lg font-bold"
+              className="field text-lg"
             >
               {vehicles.map((v) => (
                 <option key={v.vehicleCode} value={v.vehicleCode}>
@@ -91,11 +91,11 @@ export function PayoutForm({ saccoId, vehicles }: { saccoId: string; vehicles: V
             </select>
           </label>
           <label className="block space-y-1">
-            <span className="text-sm font-bold uppercase">Cash out with</span>
+            <span className="label">Cash out with</span>
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value as Provider)}
-              className="w-full rounded-xl border-2 border-ink bg-white px-3 py-3 text-lg font-bold"
+              className="field text-lg"
             >
               <option value="tando">Tando</option>
               <option value="bitcoin.co.ke">bitcoin.co.ke</option>
@@ -105,7 +105,7 @@ export function PayoutForm({ saccoId, vehicles }: { saccoId: string; vehicles: V
         </div>
 
         <label className="block space-y-1">
-          <span className="text-sm font-bold uppercase">Lightning invoice or Lightning address</span>
+          <span className="label">Lightning invoice or Lightning address</span>
           <textarea
             value={destination}
             onChange={(e) => {
@@ -116,13 +116,13 @@ export function PayoutForm({ saccoId, vehicles }: { saccoId: string; vehicles: V
             placeholder="lnbc… or name@domain"
             autoComplete="off"
             spellCheck={false}
-            className="w-full rounded-xl border-2 border-ink px-3 py-3 font-mono text-sm"
+            className="field font-mono text-base font-normal"
           />
         </label>
 
         {address ? (
           <label className="block space-y-1">
-            <span className="text-sm font-bold uppercase">Amount (sats)</span>
+            <span className="label">Amount (sats)</span>
             <input
               value={amount}
               onChange={(e) => {
@@ -131,10 +131,10 @@ export function PayoutForm({ saccoId, vehicles }: { saccoId: string; vehicles: V
               }}
               inputMode="numeric"
               placeholder="e.g. 5000"
-              className="w-full rounded-xl border-2 border-ink px-3 py-3 text-xl font-bold"
+              className="field num text-xl"
             />
             {selected?.walletSats ? (
-              <span className="text-sm text-neutral-600">Leave about 1% for routing fees.</span>
+              <span className="text-sm text-stone-600">Leave about 1% for routing fees.</span>
             ) : null}
           </label>
         ) : null}
@@ -142,16 +142,16 @@ export function PayoutForm({ saccoId, vehicles }: { saccoId: string; vehicles: V
         <button
           type="submit"
           disabled={busy || !destination.trim() || (address && !amount)}
-          className="w-full rounded-xl border-2 border-ink bg-white py-3 text-xl font-bold disabled:opacity-50"
+          className="btn btn-ghost w-full text-xl"
         >
           {busy && !preview ? "Checking…" : "Check amount"}
         </button>
       </form>
 
       {preview ? (
-        <section className="space-y-3 rounded-2xl border-4 border-ink bg-matatu p-4">
-          <p className="text-sm font-bold uppercase">Confirm payout from {vehicleCode}</p>
-          <p className="text-3xl font-black">{preview.amountSats.toLocaleString()} sats</p>
+        <section className="space-y-3 rounded-2xl border-[3px] border-ink bg-matatu p-4 motion-safe:animate-pop-in">
+          <h2 className="text-lg font-bold">Confirm payout from {vehicleCode}</h2>
+          <p className="num font-display text-5xl font-extrabold leading-none">{preview.amountSats.toLocaleString()} sats</p>
           {preview.description ? <p className="text-base">“{preview.description}”</p> : null}
           <p className="text-base">
             Wallet: {preview.balanceSats.toLocaleString()} sats → about {(preview.balanceSats - preview.amountSats).toLocaleString()} after
@@ -163,7 +163,7 @@ export function PayoutForm({ saccoId, vehicles }: { saccoId: string; vehicles: V
             type="button"
             onClick={() => void onPay()}
             disabled={busy || preview.amountSats > preview.balanceSats}
-            className="w-full rounded-xl bg-ink py-4 text-xl font-black text-white disabled:opacity-50"
+            className="btn btn-ink w-full py-4 text-xl"
           >
             {busy ? "Paying…" : `Pay ${preview.amountSats.toLocaleString()} sats`}
           </button>
