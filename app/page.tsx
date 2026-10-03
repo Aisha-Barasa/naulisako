@@ -24,35 +24,42 @@ async function demoSaccoId(): Promise<string | null> {
 export default async function Home() {
   const saccoId = await demoSaccoId();
   const links = [
-    { href: `/pay/${DEMO_VEHICLE}`, label: "Pay a fare", sub: "Passenger" },
-    { href: `/dashboard/${DEMO_VEHICLE}`, label: "Conductor dashboard", sub: DEMO_VEHICLE },
-    ...(saccoId ? [{ href: `/sacco/${saccoId}`, label: "SACCO view", sub: "Owners & totals (PIN)" }] : []),
+    { href: `/dashboard/${DEMO_VEHICLE}`, label: "Conductor" },
+    ...(saccoId
+      ? [
+          { href: `/sacco/${saccoId}`, label: "SACCO" },
+          { href: `/analytics/${saccoId}`, label: "Forecast" },
+        ]
+      : []),
   ];
 
   return (
-    <main className="mx-auto max-w-md">
-      <Header />
-      <section className="space-y-3 px-4 py-6">
-        <h1 className="text-3xl font-black leading-tight">Matatu fares by M-Pesa, settled per vehicle.</h1>
-        <p className="text-lg">
-          Passengers pay with an M-Pesa prompt. Each fare lands in the vehicle&apos;s own Lightning wallet, the conductor sees it live, and
-          owners see every plate&apos;s takings.
-        </p>
-      </section>
-      <section className="space-y-2 border-y-2 border-ink bg-matatu px-4 py-5">
-        <p className="text-xl font-extrabold">Pay your fare</p>
-        <p className="text-base">Enter the number plate · Weka nambari ya gari</p>
-        <CodeEntry />
-      </section>
-      <nav className="space-y-3 px-4 py-6" aria-label="Demo">
-        <p className="text-sm font-bold uppercase text-neutral-600">Demo</p>
-        {links.map((l) => (
-          <Link key={l.href} href={l.href} className="flex items-center justify-between rounded-xl border-2 border-ink px-4 py-3">
-            <span className="text-lg font-bold">{l.label}</span>
-            <span className="text-sm text-neutral-600">{l.sub}</span>
-          </Link>
-        ))}
-      </nav>
+    <main className="relative min-h-screen">
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat brightness-110"
+        style={{ backgroundImage: "url('/bus-cabin.jpg')" }}
+      />
+      <div className="relative mx-auto min-h-screen max-w-md">
+        <div className="h-36" aria-hidden="true" />
+        <div className="min-h-[calc(100vh-9rem)] bg-white">
+          <Header />
+          <section className="space-y-6 px-4 py-6">
+            <p className="text-lg leading-snug">
+              Pay the fare with M-Pesa. Each vehicle keeps its own wallet. The conductor checks it without taking your phone.
+            </p>
+            <CodeEntry prominent />
+            <nav className="space-y-2 border-t-2 border-ink pt-4 text-base" aria-label="Demo">
+              <p className="text-sm font-semibold text-neutral-600">Demo</p>
+              {links.map((l) => (
+                <Link key={l.href} className="block underline" href={l.href}>
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+          </section>
+        </div>
+      </div>
     </main>
   );
 }
