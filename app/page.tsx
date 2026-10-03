@@ -36,8 +36,7 @@ export default async function Home() {
     { href: `/dashboard/${DEMO_VEHICLE}`, label: "Conductor dashboard", sub: DEMO_VEHICLE },
     ...(saccoId
       ? [
-          { href: `/sacco/${saccoId}`, label: "SACCO view", sub: "Owners · PIN" },
-          { href: `/analytics/${saccoId}`, label: "Forecast", sub: "Tomorrow · PIN" },
+          { href: `/sacco/${saccoId}`, label: "SACCO view", sub: "Takings · forecast · PIN" },
         ]
       : []),
   ];
@@ -54,25 +53,30 @@ export default async function Home() {
         <div className="min-h-[calc(100vh-9rem)] bg-white">
           <Header />
 
-          <section className="px-4 py-5">
-            <h1 className="font-display text-[2.6rem] font-extrabold uppercase leading-[0.95] tracking-[-0.01em]">
+          <section className="px-5 pb-7 pt-6">
+            <h1 className="font-display text-[2.35rem] font-extrabold uppercase leading-[1.08] tracking-[0.005em]">
               Matatu fares by M-Pesa, settled per vehicle.
             </h1>
-            <p className="mt-3 max-w-[38ch] text-lg leading-snug text-stone-700">
+            <p className="mt-4 max-w-[36ch] text-lg leading-relaxed text-stone-700">
               Pay the fare with M-Pesa. Each vehicle keeps its own wallet. The conductor checks it without taking your phone.
             </p>
           </section>
 
-          <section className="space-y-2 border-y-2 border-ink bg-matatu px-4 py-5" aria-labelledby="pay-heading">
-            <h2 id="pay-heading" className="font-display text-2xl font-extrabold uppercase">
+          <section className="border-y-2 border-ink bg-matatu px-5 pb-6 pt-5" aria-labelledby="pay-heading">
+            <h2 id="pay-heading" className="font-display text-[1.7rem] font-extrabold uppercase leading-tight">
               Pay your fare
             </h2>
-            <p className="text-base text-ink/80">Scan the QR sticker inside the matatu, or type the code printed under it.<span className="block">Changanua stika ya QR, au weka nambari iliyo chini yake.</span></p>
-            <CodeEntry />
+            <p className="mt-2 text-base leading-relaxed text-ink/85">
+              Scan the QR sticker inside the matatu, or type the code printed under it.
+            </p>
+            <p className="mt-1 text-base leading-relaxed text-ink/75">Changanua stika ya QR, au weka nambari iliyo chini yake.</p>
+            <div className="mt-4">
+              <CodeEntry />
+            </div>
           </section>
 
-          <nav className="space-y-2 px-4 pb-8 pt-6" aria-labelledby="demo-heading">
-            <h2 id="demo-heading" className="text-lg font-bold">
+          <nav className="space-y-3 px-5 pb-10 pt-7" aria-labelledby="demo-heading">
+            <h2 id="demo-heading" className="pb-1 text-lg font-bold">
               Try the demo
             </h2>
             {links.map((l) => (

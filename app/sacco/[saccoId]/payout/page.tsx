@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Header } from "@/components/Logo";
 import { Plate } from "@/components/Plate";
 import { PinGate } from "@/components/PinGate";
+import { SaccoTabs } from "@/components/SaccoTabs";
 import { adminSessionOk } from "@/lib/server/admin-pin";
 import { recentPayouts } from "@/lib/server/payout";
 import { getSaccoSummary } from "@/lib/server/sacco-summary";
@@ -45,6 +46,7 @@ export default async function PayoutPage({ params }: { params: { saccoId: string
           {summary.saccoName}
         </Link>
       </Header>
+      <SaccoTabs saccoId={summary.saccoId} active="payout" />
 
       <section className="space-y-2 px-4">
         <h1 className="font-display text-4xl font-extrabold uppercase leading-none">Cash out to M-Pesa</h1>

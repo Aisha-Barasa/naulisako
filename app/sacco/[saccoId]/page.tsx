@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Header } from "@/components/Logo";
 import { Plate } from "@/components/Plate";
 import { PinGate } from "@/components/PinGate";
+import { SaccoTabs } from "@/components/SaccoTabs";
 import { adminSessionOk } from "@/lib/server/admin-pin";
 import { getSaccoSummary, type SummaryRange } from "@/lib/server/sacco-summary";
 import { formatNairobiDateTime } from "@/lib/time";
@@ -42,8 +43,9 @@ export default async function SaccoPage({ params, searchParams }: Props) {
       <Header>
         <span className="text-base font-bold">{s.saccoName}</span>
       </Header>
+      <SaccoTabs saccoId={s.saccoId} active="takings" />
 
-      <nav className="flex flex-wrap gap-2 px-4 pt-4" aria-label="Date range and tools">
+      <nav className="flex flex-wrap gap-2 px-4 pt-4" aria-label="Date range">
         {RANGES.map((r) => (
           <Link
             key={r.key}
@@ -54,14 +56,6 @@ export default async function SaccoPage({ params, searchParams }: Props) {
             {r.label}
           </Link>
         ))}
-        <span className="ml-auto flex gap-2">
-          <Link href={`/analytics/${s.saccoId}`} className="btn btn-primary min-h-11 rounded-full px-4 text-base">
-            Forecast
-          </Link>
-          <Link href={`/sacco/${s.saccoId}/payout`} className="btn btn-primary min-h-11 rounded-full px-4 text-base">
-            Cash out
-          </Link>
-        </span>
       </nav>
 
       <section className="mx-4 mt-4 grid grid-cols-2 overflow-hidden rounded-2xl border-2 border-ink bg-matatu sm:grid-cols-4">
