@@ -3,18 +3,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSupabaseAdmin } from "@/lib/server/supabase-admin";
 import { parseCallback } from "@/lib/server/daraja";
+import { pinAllowed } from "@/lib/server/admin-pin";
 import { applyStkOutcome, type TxStatus } from "@/lib/server/payments";
 
 // Demo safety net: fake a successful Daraja callback for a tx.
 // Open in dev; in production only with DEMO_ADMIN_PIN.
 
 const body = z.object({ txId: z.string().uuid(), pin: z.string().optional() });
-
-function allowed(pin: string | undefined): boolean {
-  if (process.env.NODE_ENV !== "production") return true;
-  const expected = process.env.DEMO_ADMIN_PIN;
-  return Boolean(expected) && pin === expected;
-}
 
 function fakeReceipt(): string {
   const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -26,7 +21,7 @@ function fakeReceipt(): string {
 export async function POST(req: Request) {
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Body must be { txId, pin? }" }, { status: 400 });
-  if (!allowed(parsed.data.pin)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!pinAllowed(parsed.data.pin)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const db = getSupabaseAdmin();
   const { data: tx, error } = await db
