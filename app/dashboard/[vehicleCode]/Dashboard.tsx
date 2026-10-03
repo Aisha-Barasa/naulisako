@@ -2,6 +2,7 @@
 
 import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BellIcon, BoltIcon, CheckIcon, QrIcon } from "@/components/Icons";
 import { Logo } from "@/components/Logo";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { formatNairobiTime } from "@/lib/time";
@@ -35,12 +36,22 @@ function pickDashTx(row: Record<string, unknown>): DashTx {
   };
 }
 
-const BADGE: Record<TxStatus, { label: string; cls: string }> = {
+// settled = paid and the sats have landed in the vehicle wallet (bolt icon).
+const BADGE: Record<TxStatus, { label: string; cls: string; sats?: boolean }> = {
   processing: { label: "Waiting", cls: "bg-amber-100 text-amber-900 border-amber-700" },
   fulfilled: { label: "Paid", cls: "bg-green-100 text-green-900 border-green-700" },
-  settled: { label: "Paid ⚡", cls: "bg-green-100 text-green-900 border-green-700" },
+  settled: { label: "Paid", cls: "bg-green-100 text-green-900 border-green-700", sats: true },
   failed: { label: "Failed", cls: "bg-red-100 text-red-900 border-red-700" },
 };
+
+function CodeChip({ label, value }: { label: string; value: string | null }) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5 rounded-md bg-neutral-100 px-2 py-0.5">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600">{label}</span>
+      <span className="font-mono text-base font-bold tracking-widest">{value ?? "···"}</span>
+    </span>
+  );
+}
 
 export function Dashboard({ vehicleId, vehicleCode, conductorName, routeName, payUrl, dayStartISO, initial }: Props) {
   const [txs, setTxs] = useState<DashTx[]>(initial.txs);
@@ -188,11 +199,15 @@ export function Dashboard({ vehicleId, vehicleCode, conductorName, routeName, pa
           </p>
         </div>
         <span
-          className={`ml-auto rounded-full border-2 px-3 py-1 text-sm font-bold ${
+          className={`ml-auto inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-sm font-bold ${
             live === "live" ? "border-green-700 text-green-800" : "border-neutral-400 text-neutral-600"
           }`}
         >
-          {live === "live" ? "● Live" : live === "connecting" ? "Connecting…" : "Offline · retrying"}
+          <span
+            aria-hidden="true"
+            className={`h-2 w-2 rounded-full ${live === "live" ? "animate-pulse bg-green-600" : "bg-neutral-400"}`}
+          />
+          {live === "live" ? "Live" : live === "connecting" ? "Connecting…" : "Offline · retrying"}
         </span>
       </header>
 
@@ -226,12 +241,22 @@ export function Dashboard({ vehicleId, vehicleCode, conductorName, routeName, pa
             className="w-full rounded-xl border-2 border-ink px-4 py-3 font-mono text-2xl font-bold uppercase tracking-widest"
           />
         </label>
-        <button type="button" onClick={() => setShowQr(true)} className="rounded-xl border-2 border-ink bg-ink px-4 py-3 text-lg font-bold text-white">
+        <button
+          type="button"
+          onClick={() => setShowQr(true)}
+          className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-ink px-4 py-3 text-lg font-bold text-white"
+        >
+          <QrIcon />
           Show QR
         </button>
         {!soundOn ? (
-          <button type="button" onClick={enableSound} className="rounded-xl border-2 border-ink bg-white px-4 py-3 text-lg font-bold">
-            🔔 Sound on
+          <button
+            type="button"
+            onClick={enableSound}
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-ink bg-white px-4 py-3 text-lg font-bold"
+          >
+            <BellIcon />
+            Sound on
           </button>
         ) : null}
         {q.length === 3 ? (
@@ -261,14 +286,24 @@ export function Dashboard({ vehicleId, vehicleCode, conductorName, routeName, pa
               <div className="w-14 shrink-0 text-sm font-semibold text-neutral-700">{formatNairobiTime(t.created_at)}</div>
               <div className="min-w-0 flex-1">
                 <p className="text-xl font-black">KES {t.amount_kes.toLocaleString()}</p>
-                <p className="font-mono text-base">
-                  📱***{t.phone_last3} · 🧾{t.receipt_last3 ?? "···"}
+                <p className="mt-1 flex flex-wrap gap-1.5">
+                  <CodeChip label="Phone" value={t.phone_last3} />
+                  <CodeChip label="Receipt" value={t.receipt_last3} />
                 </p>
               </div>
-              <span className={`shrink-0 rounded-full border px-2 py-0.5 text-sm font-bold ${badge.cls}`}>{badge.label}</span>
+              <span
+                className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-sm font-bold ${badge.cls}`}
+                title={badge.sats ? "Paid, sats in the vehicle wallet" : undefined}
+              >
+                {badge.label}
+                {badge.sats ? <BoltIcon className="h-3.5 w-3.5" /> : null}
+              </span>
               {isPaid(t.status) ? (
                 t.verified_by_conductor ? (
-                  <span className="w-24 shrink-0 text-center text-sm font-bold text-green-800">✓ Verified</span>
+                  <span className="inline-flex w-24 shrink-0 items-center justify-center gap-1 text-sm font-bold text-green-800">
+                    <CheckIcon className="h-4 w-4" />
+                    Verified
+                  </span>
                 ) : (
                   <button
                     type="button"
