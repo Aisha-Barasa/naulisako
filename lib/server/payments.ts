@@ -1,10 +1,11 @@
 import { getSupabaseAdmin } from "./supabase-admin";
 import { settleTransaction } from "./treasury";
+import type { TxStatus } from "../tx-public";
 
 // One state machine for every way an STK result reaches us:
 // Daraja callback, STK query fallback, and the dev simulate route.
 
-export type TxStatus = "processing" | "fulfilled" | "settled" | "failed";
+export type { TxStatus };
 
 export type StkOutcome = {
   checkoutRequestId: string;
