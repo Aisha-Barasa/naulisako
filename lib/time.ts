@@ -17,3 +17,15 @@ export function formatNairobiTime(iso: string): string {
     hourCycle: "h23",
   }).format(new Date(iso));
 }
+
+/** "2 Oct, 18:40" in Nairobi time. */
+export function formatNairobiDateTime(iso: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(iso));
+}
