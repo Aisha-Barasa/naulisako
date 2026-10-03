@@ -39,7 +39,7 @@ type VehicleRow = {
   owner_id: string | null;
   vehicle_wallets: { lnbits_invoice_key: string } | null;
 };
-type TxRow = {
+export type TxRow = {
   id: string;
   vehicle_id: string;
   amount_kes: number;
@@ -52,7 +52,7 @@ type TxRow = {
 const PAGE = 1000; // PostgREST caps rows per request
 
 /** Paid fares (fulfilled + settled, seed history included) in [from, to). */
-async function paidTxs(vehicleIds: string[], from: string, to: string): Promise<TxRow[]> {
+export async function paidTxs(vehicleIds: string[], from: string, to: string): Promise<TxRow[]> {
   const db = getSupabaseAdmin();
   const out: TxRow[] = [];
   for (let offset = 0; ; offset += PAGE) {

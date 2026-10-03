@@ -42,7 +42,7 @@ export default async function SaccoPage({ params, searchParams }: Props) {
         <span className="text-base font-bold">{s.saccoName}</span>
       </Header>
 
-      <nav className="flex gap-2 px-4 pt-4" aria-label="Date range">
+      <nav className="flex flex-wrap gap-2 px-4 pt-4" aria-label="Date range and tools">
         {RANGES.map((r) => (
           <Link
             key={r.key}
@@ -53,6 +53,14 @@ export default async function SaccoPage({ params, searchParams }: Props) {
             {r.label}
           </Link>
         ))}
+        <span className="ml-auto flex gap-2">
+          <Link href={`/analytics/${s.saccoId}`} className="rounded-full border-2 border-ink bg-matatu px-4 py-1.5 text-base font-bold">
+            Forecast
+          </Link>
+          <Link href={`/sacco/${s.saccoId}/payout`} className="rounded-full border-2 border-ink bg-matatu px-4 py-1.5 text-base font-bold">
+            Cash out
+          </Link>
+        </span>
       </nav>
 
       <section className="mx-4 mt-4 grid grid-cols-2 overflow-hidden rounded-2xl border-2 border-ink bg-matatu sm:grid-cols-4">
